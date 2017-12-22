@@ -1,0 +1,245 @@
+#cBNGL encoding of the model of Goldstein et al. (2002) and Faeder et al. (2003)
+#created by Lily A. Chylek and William S. Hlavacek
+#version of 16 February 2011
+#
+#This file is referenced as model.bngl in 
+#'Guidelines for visualizing and annotating rule-based models'
+#by Chylek LA, Hu B,..., Hlavacek WS
+#
+#This file works with BioNetGen version 2.1.9 (bionetgen.org)
+#
+#Kappa versions of BNGL-encoded rules are provided in comment lines
+#
+#REFERENCES
+#
+#For information about the model, including parameter values, see
+#Faeder JR, Hlavacek WS, et al. (2003) J. Immunol. 170, 3769-3781.
+#Goldstein B, Faeder JR, Hlavacek WS, et al. (2002) Mol. Immunol. 38, 1221-1228.
+#
+#For information about cBNGL, see
+#Harris LA, Hogg JS, Faeder JR (2009) In Proc. 2009 Winter Simulation Conference
+#(Rossetti MD, Hill RR, Johansson B, Dunkin A, Ingalls RG, Editors), IEEE Xplore Digital Library, pp. 908-919. 
+#
+#For information about BioNetGen and BNGL, see
+#Faeder JR, Blinov ML, Hlavacek WS (2009) Methods Mol. Biol. 500, 113-167.
+#
+#A nice tool for using BioNetGen is the RuleBender IDE:
+#http://rulebender.cs.pitt.edu/
+#
+#For information about Kappa, see kappalanguage.org
+#A brief comparison of BNGL and Kappa is available (http://bionetgen.org/index.php/Kappa_vs._BNGL)
+
+begin model 
+
+begin parameters
+
+# population sizes
+Lig_tot         6.0e3
+Rec_tot         4.0e2
+Lyn_tot         2.8e1
+Syk_tot         4.0e2
+
+# rate constants
+kp1   1.3285e-7 * v_E
+km1   0.0
+kp2   2.5e-1 * ev_M
+km2   0.0
+kpL   5.0e-2 * ev_M
+kmL   20.0
+kpLs  5.0e-2 * ev_M
+kmLs  0.12
+kpS   6.0e-2 * v_C
+kmS   0.13
+kpSs  6.0e-2
+kmSs  0.13
+pLb   30.0
+pLbs  100.0
+pLg   1.0
+pLgs  3.0
+pLS   30.0
+pLSs  100.0
+pSS   100.0
+pSSs  200.0 
+dm    20.0
+dc    20.0
+
+#compartment sizes
+v_E   	1.0e6
+sa_M   	600
+v_C   	1.4e3
+
+eff_width 1e-2
+ev_M 	sa_M * eff_width
+
+end parameters
+
+begin molecule types
+
+#Lig denotes a chemically crosslinked IgE dimer
+#The Fc region of each IgE binds the alpha subunit of Fc(epsilon)RI
+Lig(Fc,Fc)
+
+#Rec denotes Fc(epsilon)RI
+#The receptor is composed of alpha and beta chains and disulfide-linked homodimer of gamma chains
+#The alpha subunit is denoted a
+#The beta subunit is denoted b
+#The gamma subunit is denoted g
+#The beta and gamma subunits each have two possible internal states:
+#0 (not modified) or P (phosphorylated)
+Rec(a,b~0~P,g~0~P)
+
+#Lyn denotes the Src-family tyrosine kinase Lyn
+#U denotes the unique domain of Lyn
+#SH2 denotes the Src homology 2 (SH2) domain of Lyn
+Lyn(U,SH2)
+
+#Syk denotes the Syk-family tyrosine kinase Syk
+#tSH2 denotes the two tandem SH2 domains of Syk
+#l denotes the linker region of Syk, between the SH2 domains and the kinase domain
+#a denotes the activation loop of the kinase domain of Syk
+#the l and a components of Syk each have two possible internal states:
+#0 (not modified) or P (phosphorylated)
+Syk(tSH2,l~0~P,a~0~P)
+
+end molecule types
+
+begin compartments
+
+E  3  v_E       # extracellular space
+M  2  sa_M * eff_width  E    # plasma membrane 
+C  3  v_C  M    # cytoplasm 
+end compartments 
+
+begin seed species
+
+Lig(Fc,Fc)@E Lig_tot
+Rec(a,b~0,g~0)@M Rec_tot
+Lyn(U,SH2)@M Lyn_tot
+Syk(tSH2,l~0,a~0)@C Syk_tot
+
+end seed species
+
+begin reaction rules
+
+#Rules are numbered to correspond to the equation numbers in Appendix S1
+
+# 1a: Ligand-receptor binding      
+Rec(a) + Lig(Fc,Fc) <-> Rec(a!1).Lig(Fc!1,Fc) kp1, km1
+# A Kappa version of this rule is given below
+#'Ligand-receptor binding' Rec(a),Lig(l1,l2) <-> Rec(a!1),Lig(l1!1,l2) @ 0.00000026569,0.0
+
+# 1b: Receptor aggregation
+Rec(a) + Lig(Fc,Fc!+) <-> Rec(a!2).Lig(Fc!2,Fc!+) kp2, km2
+# A Kappa version of this rule is given below
+#'Receptor aggregation' Rec(a),Lig(l1!_,l2) <-> Rec(a!1),Lig(l1!_,l!1) @ 0.25,0.0
+
+# 2: Constitutive Lyn-receptor binding
+Rec(b~0) + Lyn(U,SH2) <-> Rec(b~0!1).Lyn(U!1,SH2) kpL, kmL
+# A Kappa version of this rule is given below
+#'Constitutive Lyn-receptor binding' Rec(b~Y),Lyn(U,SH2) <-> Rec(b~Y!1),Lyn(U!1,SH2) @ 0.05,20.0
+
+# 3a: Transphosphorylation of beta by constitutive Lyn
+Lig(Fc!1,Fc!2).Lyn(U!3,SH2).Rec(a!2,b~0!3).Rec(a!1,b~0) -> Lig(Fc!1,Fc!2).Lyn(U!3,SH2).Rec(a!2,b~0!3).Rec(a!1,b~P) pLb
+# A Kappa version of this rule is given below
+#'Transphosphorylation of beta by constitutive Lyn' Lig(l1!1,l2!2),Lyn(U!3,SH2),Rec(a!2,b~Y!3),Rec(a!1,b~Y) -> Lig(l1!1,l2!2),Lyn(U!3,SH2),Rec(a!2,b~Y!3),Rec(a!1,b~pY) @ 30.0
+
+# 4a: Transphosphorylation of gamma by constitutive Lyn
+Lig(Fc!1,Fc!2).Lyn(U!3,SH2).Rec(a!2,b~0!3).Rec(a!1,g~0) -> Lig(Fc!1,Fc!2).Lyn(U!3,SH2).Rec(a!2,b~0!3).Rec(a!1,g~P) pLg
+# A Kappa version of this rule is given below
+#'Transphosphorylation of gamma by constitutive Lyn' Lig(l1!1,l2!2),Lyn(U!3,SH2),Rec(a!2,b~Y!3),Rec(a!1,g~Y) -> Lig(l1!1,l2!2),Lyn(U!3,SH2),Rec(a!2,b~Y!3),Rec(a!1,g~pY) @ 1.0
+
+# 5: Lyn-receptor binding through SH2 domain
+Rec(b~P) + Lyn(U,SH2) <-> Rec(b~P!1).Lyn(U,SH2!1) kpLs, kmLs
+# A Kappa version of this rule is given below
+#'Lyn-receptor binding through SH2 domain' Rec(b~pY),Lyn(U,SH2) <-> Rec(b~pY!1),Lyn(U,SH2!1) @ 0.05,0.12
+
+# 3b: Transphosphorylation of beta by SH2-bound Lyn
+Lig(Fc!1,Fc!2).Lyn(U,SH2!3).Rec(a!2,b~P!3).Rec(a!1,b~0) -> Lig(Fc!1,Fc!2).Lyn(U,SH2!3).Rec(a!2,b~P!3).Rec(a!1,b~P) pLbs
+# A Kappa version of this rule is given below
+#'Transphosphorylation of beta by SH2-bound Lyn' Lig(l1!1,l2!2),Lyn(U,SH2!3),Rec(a!2,b~pY!3),Rec(a!1,b~Y) -> Lig(l1!1,l2!2),Lyn(U,SH2!3),Rec(a!2,b~pY!3),Rec(a!1,b~pY) @ 100.0
+
+# 4b: Transphosphorylation of gamma by SH2-bound Lyn
+Lig(Fc!1,Fc!2).Lyn(U,SH2!3).Rec(a!2,b~P!3).Rec(a!1,g~0) -> Lig(Fc!1,Fc!2).Lyn(U,SH2!3).Rec(a!2,b~P!3).Rec(a!1,g~P) pLgs
+# A Kappa version of this rule is given below
+#'Transphosphorylation of gamma by SH2-bound Lyn' Lig(l1!1,l2!2),Lyn(U,SH2!3),Rec(a!2,b~pY!3),Rec(a!1,g~Y) -> Lig(l1!1,l2!2),Lyn(U,SH2!3),Rec(a!2,b~pY!3),Rec(a!1,g~pY) @ 3.0
+
+# 6: Syk-receptor binding through tandem SH2 domains
+Rec(g~P) + Syk(tSH2) <-> Rec(g~P!1).Syk(tSH2!1) kpS, kmS
+# A Kappa version of this rule is given below
+#'Syk-receptor binding through tandem SH2 domains' Rec(g~pY),Syk(tSH2) <-> Rec(g~pY!1),Syk(tSH2!1) @ 0.06,0.13 
+
+# 7a: Transphosphorylation of Syk by constitutive Lyn
+Lig(Fc!1,Fc!2).Lyn(U!3,SH2).Rec(a!2,b~0!3).Rec(a!1,g~P!4).Syk(tSH2!4,l~0) -> \
+Lig(Fc!1,Fc!2).Lyn(U!3,SH2).Rec(a!2,b~0!3).Rec(a!1,g~P!4).Syk(tSH2!4,l~P) pLS
+# A Kappa version of this rule is given below
+#'Transphosphorylation of Syk by constitutive Lyn' Lig(l1!1,l2!2),Lyn(U!3,SH2),Rec(a!2,b~Y!3),Rec(a!1,g~pY!4),Syk(tSH2!4,l~Y) -> Lig(l1!1,l2!2),Lyn(U!3,SH2),Rec(a!2,b~Y!3),Rec(a!1,g~pY!4),Syk(tSH2!4,l~pY) @ 30.0
+
+# 7b: Transphosphorylation of Syk by SH2-bound Lyn
+Lig(Fc!1,Fc!2).Lyn(U,SH2!3).Rec(a!2,b~P!3).Rec(a!1,g~P!4).Syk(tSH2!4,l~0) -> \
+Lig(Fc!1,Fc!2).Lyn(U,SH2!3).Rec(a!2,b~P!3).Rec(a!1,g~P!4).Syk(tSH2!4,l~P) pLSs
+# A Kappa version of this rule is given below
+#'Transphosphorylation of Syk by SH2-bound Lyn' Lig(l1!1,l2!2),Lyn(U,SH2!3),Rec(a!2,b~pY!3),Rec(a!1,g~pY!4),Syk(tSH2!4,l~Y) -> Lig(l1!1,l2!2),Lyn(U,SH2!3),Rec(a!2,b~pY!3),Rec(a!1,g~pY!4),Syk(tSH2!4,l~pY) @ 100.0
+
+# 8a: Transphosphorylation of Syk by Syk with unphosphorylated activation loop
+Lig(Fc!1,Fc!2).Syk(tSH2!3,a~0).Rec(a!2,g~P!3).Rec(a!1,g~P!4).Syk(tSH2!4,a~0) -> \
+Lig(Fc!1,Fc!2).Syk(tSH2!3,a~0).Rec(a!2,g~P!3).Rec(a!1,g~P!4).Syk(tSH2!4,a~P) pSS
+# A Kappa version of this rule is given below
+#'Transphosphorylation of Syk by Syk with unphosphorylated activation loop' Lig(l1!1,l2!2),Syk(tSH2!3,a~Y),Rec(a!2,g~pY!3),Rec(a!1,g~pY!4),Syk(tSH2!4,a~Y) -> Lig(l1!1,l2!2),Syk(tSH2!3,a~Y),Rec(a!2,g~pY!3),Rec(a!1,g~pY!4),Syk(tSH2!4,a~pY) @ 100.0
+
+# 8b: Transphosphorylation of Syk by Syk with phosphorylated activation loop
+Lig(Fc!1,Fc!2).Syk(tSH2!3,a~P).Rec(a!2,g~P!3).Rec(a!1,g~P!4).Syk(tSH2!4,a~0) -> \
+Lig(Fc!1,Fc!2).Syk(tSH2!3,a~P).Rec(a!2,g~P!3).Rec(a!1,g~P!4).Syk(tSH2!4,a~P) pSSs
+# A Kappa version of this rule is given below
+#'Transphosphorylation of Syk by Syk with phosphorylated activation loop' Lig(l1!1,l2!2),Syk(tSH2!3,a~pY),Rec(a!2,g~pY!3),Rec(a!1,g~pY!4),Syk(tSH2!4,a~Y) -> Lig(l1!1,l2!2),Syk(tSH2!3,a~pY),Rec(a!2,g~pY!3),Rec(a!1,g~pY!4),Syk(tSH2!4,a~pY) @ 200.0
+
+# 9a: Dephosphorylation of beta
+Rec(b~P)-> Rec(b~0) dm
+# A Kappa version of this rule is given below
+#'Dephosphorylation of beta' Rec(b~pY) -> Rec(b~Y) @ 20.0
+
+# 9b: Dephosphorylation of gamma
+Rec(g~P)-> Rec(g~0) dm
+# A Kappa version of this rule is given below
+#'Dephosphorylation of gamma' Rec(g~pY) -> Rec(g~Y) @ 20.0
+
+# 9c: Dephosphorylation of Syk linker region at membrane
+Syk(tSH2!1,l~P)-> Syk(tSH2!1,l~0) dm
+# 9d: Dephosphorylation of Syk activation loop at membrane
+Syk(tSH2!1,a~P)-> Syk(tSH2!1,a~0) dm
+
+# Kappa versions of these rules are given below
+#'Dephosphorylation of Syk at membrane' Syk(tSH2!_,l~pY) -> Syk(tSH2!_,l~Y) @ 20.0
+#'Dephosphorylation of Syk at membrane' Syk(tSH2!_,a~pY) -> Syk(tSH2!_,a~Y) @ 20.0
+
+# 9e: Dephosphorylation of Syk linker region in cytosol
+Syk(tSH2,l~P)-> Syk(tSH2,l~0) dc
+# 9f: Dephosphorylation of Syk activation loop in cytosol
+Syk(tSH2,a~P)-> Syk(tSH2,a~0) dc
+# Kappa versions of these rules are given below
+#'Dephosphorylation of Syk in cytosol' Syk(tSH2,l~pY) -> Syk(tSH2,l~Y) @ 20.0
+#'Dephosphorylation of Syk in cytosol' Syk(tSH2,a~pY) -> Syk(tSH2,a~Y) @ 20.0
+
+end reaction rules
+
+begin observables
+
+Molecules     LynFree     Lyn(U,SH2)
+Molecules     RecMon	  Rec(a) Rec(a!1).Lig(Fc!1,Fc)
+Molecules     RecDim      Rec.Rec                   
+Molecules     RecPbeta    Rec(b~P!?)
+Molecules     RecPgamma   Rec(g~P) Rec(g~P!1)
+Molecules     RecSyk      Rec(g~P!1).Syk(tSH2!1)
+Molecules     RecSykPS    Rec(g~P!1).Syk(tSH2!1,a~P)
+Molecules     SykTest     Syk
+Molecules     LynTest     Lyn
+Molecules     RecTest     Rec
+
+end observables
+
+end model 
+
+#actions
+
+generate_network({overwrite=>1});
+simulate_ode({t_end=>600,n_steps=>10,atol=>1e-8,rtol=>1e-8});
+writeSBML({});
