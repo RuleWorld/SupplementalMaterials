@@ -1,0 +1,133 @@
+# file metadata
+# filename: prion_dynamics_14Sep2017.bngl
+# author: William S. Hlavacek, Los Alamos National Laboratory
+# creation date: 14-Sep-2017
+
+begin model
+
+# Dynamics of the nucleated polymerization model of prion replication
+
+# Reference:
+# - Rubenstein R, Gray PC, Cleland TJ, et al. (2007) Biophys Chem 125: 360-367.
+
+begin parameters
+
+# Avogadro constant
+NA 6.02214e23 # molecules per mol
+
+# volume
+Volume 1e-12 # L
+# 602 copies per reaction compartment corresponds to 1 nM
+# 1e-9 M * (NA*V) = 602
+
+# Table 1
+# 
+a 0.047 # per day (the value of this parameter will be adjusted in the actions block)
+#
+beta 2.92e-3 # per day
+#
+b 0.0314 # per day
+#
+lambda 2400 # per day
+#
+d 4 # per day
+#
+x_0=lambda/d # (=2400/4=600) dimensionless
+#
+n 2 # (2 or 3) dimensionless
+
+gamma 100 # per day
+
+epsilon 1e-10 # a small number (used to avoid a divide-by-zero error)
+
+end parameters
+
+begin molecule types
+
+PrP(a~C~Sc,x,y)
+
+end molecule types
+
+begin seed species
+
+PrP(a~C,x,y) x_0 # 1 nM
+PrP(a~Sc,x,y!1).PrP(a~Sc,x!1,y!2).PrP(a~Sc,x!2,y) 3 # 0.005 nM
+
+end seed species
+
+begin observables
+
+# PrP^C
+Molecules PrPC PrP(a~C,x,y)
+
+# PrP^Sc
+Molecules PrPSc PrP(a~Sc)
+
+# number of PrPSc-containing species (monomers, dimers, trimers, etc.)
+Species aggregates PrP(a~Sc)
+
+end observables
+
+begin functions
+
+PrPC_nM()=PrPC/602
+PrPSc_nM()=PrPSc/602
+aggregates_nM()=aggregates/602
+mean_chain_length()=PrPSc/(aggregates+epsilon)
+
+end functions
+
+begin reaction rules
+
+# Equation (1) - PrPC synthesis
+0->PrP(a~C,x,y) lambda
+
+# Equation (2) - PrPC degradation
+PrP(a~C,x,y)->0 d
+
+# Equation (3) - clearance of PrPSc chains (slow)
+# This rule deletes any species containing a molecule of PrP in the Sc conformation.
+# The {MatchOnce} qualifier means that the rate of degradation 
+#  does NOT depend on the number of copies of PrPSc in the species to be deleted.
+{MatchOnce}PrP(a~Sc)->0 a
+
+# Equation (4) - PrPSc chain elongation
+PrP(a~Sc,y)+PrP(a~C,x,y)->PrP(a~Sc,y!1).PrP(a~Sc,x!1,y) beta
+
+# Equation (5) - PrPSc chain breakage
+PrP(a~Sc,y!1).PrP(a~Sc,x!1)->PrP(a~Sc,y)+PrP(a~Sc,x) b
+
+# Equation (6) - conformation change (Sc to C)
+# n = 2
+# include the line below if n>=1
+PrP(a~Sc,x,y)->PrP(a~C,x,y) gamma
+# include the line below if n>=2
+PrP(a~Sc,x,y!1).PrP(a~Sc,x!1,y)->PrP(a~C,x,y)+PrP(a~C,x,y) gamma
+# include the line below if n>=3
+#PrP(a~Sc,x,y!1).PrP(a~Sc,x!1,y!2).PrP(a~Sc,x!2,y)->PrP(a~C,x,y)+PrP(a~C,x,y)+PrP(a~C,x,y) gamma
+
+end reaction rules
+
+end model
+
+begin actions
+
+# Generate results shown in Figure 2 of Rubenstein et al. (2007).
+
+generate_network({overwrite=>1,check_iso=>1,max_stoich=>{PrP=>40}})
+
+saveConcentrations()
+
+resetConcentrations()
+setParameter("a",0.0235)
+simulate({method=>"ssa",suffix=>"0.0235",t_start=>0,t_end=>300,n_steps=>300,print_functions=>1})
+
+resetConcentrations()
+setParameter("a",0.047)
+simulate({method=>"ssa",suffix=>"0.0470",t_start=>0,t_end=>300,n_steps=>300,print_functions=>1})
+
+resetConcentrations()
+setParameter("a",0.094)
+simulate({method=>"ssa",suffix=>"0.0940",t_start=>0,t_end=>300,n_steps=>300,print_functions=>1})
+
+end actions
