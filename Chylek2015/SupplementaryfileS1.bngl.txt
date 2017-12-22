@@ -1,0 +1,190 @@
+begin model
+
+# Supplementary file S1
+
+begin parameters
+
+# Protein copy numbers
+IgG_tot 2 # number per 1/1000 of cell
+FcR_tot 4.0e2 # number per 1/1000 of cell
+Lyn_tot 2.8e1 # number per 1/1000 of cell
+Syk_tot 4.0e2 # number per 1/1000 of cell
+Lat_tot 4.0e2 # number per 1/1000 of cell
+
+# Rate constants 
+kp1 1.7e-6 # [=] /(molecule/cell)/s
+km1 0.01 # [=] /s
+kp2 4.0e-1 # [=] /(molecule/cell)/s
+km2 km1 # [=] /s
+kpL 5e-2 # [=] /(molecule/cell)/s
+kmL 20 # [=] /s
+kpLs 5e-2 # [=] /(molecule/cell)/s
+kmLs 0.12 # [=] /s
+kpS 6e-2 # [=] /(molecule/cell)/s
+kmS 0.13 # [=] /s
+kpSs 6e-2 # [=] /(molecule/cell)/s
+kmSs 0.13 # [=] /s
+pLb 30 # [=] /s
+pLbs 100 # [=] /s
+pLg 1 # [=] /s
+pLgs 3 # [=] /s
+pLS 30 # [=] /s
+pLSs 100 # [=] /s
+pSS 100 # [=] /s
+pSSs 200  # [=] /s
+dm 20 # [=] /s
+dc 20 # [=] /s
+
+kpMM 5e-3 # [=] /(molecule/cell)/s
+
+kmMM 20 # [=] /s
+
+pMM 200  # [=] /s
+end parameters
+
+begin molecule types
+# anti-Fc epsilon RI antibody
+#   Fab = antigen-combining site 
+#   IgG is bivalent; thus, there are two (identical) Fab components
+IgG(Fab,Fab)
+# Fc epsilon RI
+FcR(alpha,beta~0~1,gamma~0~1) # 0 = unphosphorylated and 1 = phosphorylated
+# protein tyrosine kinase Lyn
+#   U = unique domain
+#   SH2 = Src homology 2 (SH2) domain
+Lyn(U,SH2)
+# protein tyrosine kinase Syk
+#   tSH2 = tandem pair of SH2 domains
+#   PTK = protein tyrosine kinase (PTK) domain
+Syk(tSH2,PTK~0~1) # 0 = unphosphorylated and 1 = phosphorylated
+# Lat, a transmembrane adaptor protein
+#   Y136 is a substrate of Syk
+Lat(Y136~0~P) # 0 = unphosphorylated and P = phosphorylated
+end molecule types
+
+begin seed species
+IgG(Fab,Fab) IgG_tot
+Lyn(U,SH2) Lyn_tot
+Syk(tSH2,PTK~0) Syk_tot
+FcR(alpha,beta~0,gamma~0) FcR_tot
+
+Lat(Y136~0) Lat_tot
+end seed species
+
+begin observables
+
+Molecules pLat       Lat(Y136~P!?)
+Molecules LynFree    Lyn(U,SH2)
+Molecules FcRMon	 FcR(alpha), FcR(alpha!1).IgG(Fab!1,Fab)
+Molecules FcRDim     FcR.FcR    
+Molecules FcRPbeta   FcR(beta~1!?)
+Molecules FcRPgamma  FcR(gamma~1), FcR(gamma~1!+)
+Molecules FcRSyk     FcR(gamma~1!1).Syk(tSH2!1)
+Molecules FcRSykPS   FcR(gamma~1!1).Syk(tSH2!1,PTK~1)
+Molecules SykTest    Syk
+Molecules LynTest    Lyn
+Molecules FcRTest    FcR
+end observables
+
+begin functions
+Pb() FcRPbeta/FcRDim
+Pg() FcRPgamma/FcRDim
+SykP() FcRSykPS/FcRDim
+end functions
+
+begin reaction rules
+# interaction of IgG with Fc epsilon RI's alpha chain   
+
+#   Free IgG reversibly binds Fc epsilon RI alpha.   
+FcR(alpha) + IgG(Fab,Fab) <-> FcR(alpha!1).IgG(Fab!1,Fab) kp1, km1
+
+#   Tethered IgG crosslinks two receptors.
+
+FcR(alpha) + IgG(Fab,Fab!+) <-> FcR(alpha!2).IgG(Fab!2,Fab!+) kp2,km2
+
+# Interaction between Lyn's unique domain and Fc epsilon RI's beta chain
+
+FcR(beta~0) + Lyn(U,SH2) <-> FcR(beta~0!1).Lyn(U!1,SH2) kpL, kmL
+
+# Lyn-mediated phosphorylation of Fc epsilon RI
+#   Lyn is bound at its unique domain; Lyn phosphorylates beta.
+IgG(Fab!1,Fab!2).Lyn(U!3,SH2).FcR(alpha!2,beta~0!3).FcR(alpha!1,beta~0) -> \
+  IgG(Fab!1,Fab!2).Lyn(U!3,SH2).FcR(alpha!2,beta~0!3).FcR(alpha!1,beta~1) pLb
+
+#   Lyn is bound at its unique domain; Lyn phosphorylates gamma.
+IgG(Fab!1,Fab!2).Lyn(U!3,SH2).FcR(alpha!2,beta~0!3).FcR(alpha!1,gamma~0) -> \
+  IgG(Fab!1,Fab!2).Lyn(U!3,SH2).FcR(alpha!2,beta~0!3).FcR(alpha!1,gamma~1) pLg
+
+
+#   Lyn is bound at its SH2 domain; Lyn phosphorylates beta.
+IgG(Fab!1,Fab!2).Lyn(U,SH2!3).FcR(alpha!2,beta~1!3).FcR(alpha!1,beta~0) -> \
+  IgG(Fab!1,Fab!2).Lyn(U,SH2!3).FcR(alpha!2,beta~1!3).FcR(alpha!1,beta~1) pLbs
+
+#   Lyn is bound at its SH2 domain; Lyn phosphorylates gamma.
+IgG(Fab!1,Fab!2).Lyn(U,SH2!3).FcR(alpha!2,beta~1!3).FcR(alpha!1,gamma~0) -> \
+IgG(Fab!1,Fab!2).Lyn(U,SH2!3).FcR(alpha!2,beta~1!3).FcR(alpha!1,gamma~1) pLgs
+
+# interaction between Lyn's SH2 domain and Fc epsilon RI's phosphorylated beta chain
+
+FcR(beta~1) + Lyn(U,SH2) <-> FcR(beta~1!1).Lyn(U,SH2!1) kpLs, kmLs
+
+# interaction between Syk's SH2 domains and Fc epsilon RI's phosphorylated gamma chain
+
+FcR(gamma~1) + Syk(tSH2) <-> FcR(gamma~1!1).Syk(tSH2!1) kpS, kmS
+
+# Syk autophosphorylation
+
+#   Catalytic Syk has low activity.
+IgG(Fab!1,Fab!2).Syk(tSH2!3,PTK~0).FcR(alpha!2,gamma~1!3).FcR(alpha!1,gamma~1!4).Syk(tSH2!4,PTK~0) -> \
+  IgG(Fab!1,Fab!2).Syk(tSH2!3,PTK~0).FcR(alpha!2,gamma~1!3).FcR(alpha!1,gamma~1!4).Syk(tSH2!4,PTK~1) pSS
+
+#   Catalytic Syk has high activity (because its activation loop is phosphorylated).
+
+IgG(Fab!1,Fab!2).Syk(tSH2!3,PTK~1).FcR(alpha!2,gamma~1!3).FcR(alpha!1,gamma~1!4).Syk(tSH2!4,PTK~0) -> \
+  IgG(Fab!1,Fab!2).Syk(tSH2!3,PTK~1).FcR(alpha!2,gamma~1!3).FcR(alpha!1,gamma~1!4).Syk(tSH2!4,PTK~1) pSSs
+
+
+  
+# Phosphorylation of Lat by Syk via a Michaelis-Menten mechanism 
+
+#   enzyme-substrate association
+
+Syk(tSH2!+,PTK~1) + Lat(Y136~0) -> Syk(tSH2!+,PTK~1!1).Lat(Y136~0!1) kpMM
+
+#   enzyme-substrate dissociation (without reaction)
+
+Syk(PTK~1!1).Lat(Y136~0!1) -> Syk(PTK~1) + Lat(Y136~0) kmMM
+
+#   conversion of product to substrate (with release of substrate from the enzyme's active site)
+Syk(PTK~1!1).Lat(Y136~0!1) -> Syk(PTK~1) + Lat(Y136~P) pMM
+
+
+
+# Dephosphorylation of Lat
+
+Lat(Y136~P) -> Lat(Y136~0) dm 
+
+
+# Dephosphorylation of FcR beta
+FcR(beta~1) -> FcR(beta~0)  dm
+
+# Dephosphorylation of FcR gamma
+FcR(gamma~1) -> FcR(gamma~0)  dm
+
+# Dephosphorylation of Syk at membrane
+Syk(tSH2!+,PTK~1) -> Syk(tSH2!+,PTK~0)  dm
+
+# Dephosphorylation of Syk in cytosol
+Syk(tSH2,PTK~1) -> Syk(tSH2,PTK~0)  dc
+end reaction rules
+
+end model
+
+begin actions
+# generate network
+generate_network({overwrite=>1,max_iter=>100})
+# perform simulations to find steady-state dose-reponse curve
+parameter_scan({method=>"ode",t_end=>1e5,n_steps=>10,\
+  parameter=>"km1",par_min=>1e-3,par_max=>10,n_scan_pts=>100,\
+  log_scale=>1,print_functions=>1})
+end actions

@@ -1,0 +1,141 @@
+begin model
+
+# Fragmented version of the model specified in Supplementary file S3
+#   The rules of this model imply a network with 32 chemical species
+#   and 110 unidirectional reactions. The rules of the original,
+#   unfragmented model imply a network with 156 chemical species and
+#   1,218 unidirectional reactions. 
+
+# References:
+# 1. Borisov N, Chistopolsky AS, Faeder JR, Kholodenko BN (2008)
+#    IET Syst Biol 2: 342-351. 
+# 2. Feret J, Danos V, Krivine J, Harmer R, Fontana W (2009) 
+#    Proc Natl Acad Sci USA 106: 6453-6458.
+
+begin parameters
+
+# Parameter values are the same as in Supplementary file S3.
+
+NA 6.02214e23 # [=] molecules per mol
+V 1.0e-12 # [=] L (1 pL)
+Rtot 1.0e4 # [=] number per cell
+Atot 1.0e5 # [=] number per cell
+Ptot 1.0e5 # [=] number per cell
+inhtot 1.0e6 # [=] number per cell
+KdimRtot 0.02 # [=] dimensionless
+kr_dim 1.0 # [=] /s
+kf_dim=kr_dim*KdimRtot/Rtot # [=] /(molecule/cell)/s
+p1_auto 1.0 # [=] /s
+p2_auto 0.5 # [=] /s
+p1_nonsp 0.05 # [=] /s
+p2_nonsp 0.05 # [=] /s
+kf_a1 5.0e5/(NA*V) # [=] /(molecule/cell)/s (1e6 /M/s)
+kr_a1 0.05 # [=] /s
+kf_a2 2.0e6/(NA*V) # [=] /(molecule/cell)/s (1e6 /M/s)
+kr_a2 0.2 # [=] /s
+kp1 1.0e6/(NA*V) # [=] /(molecule/cell)/s (1e6 /M/s)
+km1 0.1 # /s
+kcat1 2.0 # /s
+kp2 1.0e6/(NA*V) # [=] /(molecule/cell)/s (1e6 /M/s)
+km2 0.1 # [=] /s
+kcat2 0.5 # [=] /s
+kf_inh 1.0e7/(NA*V) # [=] /(molecule/cell)/s (1e7 /M/s)
+kr_inh 0.01 # [=] /s
+
+end parameters
+
+begin molecule types
+
+# The sites Y1 and Y2 have independent uncorrelated states, so they can be
+#   defined here as separate molecule entities. Doing so yields a reduction 
+#   in the size of the network/ODE model produced through network generation.
+#   The two molecule type definitions below replace "R(dim,Y1~0~P,Y2~0~P)"
+#   in Supplementary file S3. In this way, R is "fragmented."
+R1(dim,Y1~0~P)
+R2(dim,Y2~0~P)
+
+# The remaining molecule type definitions are the same as in Supplementary file S3.
+A(SH2)
+P(cat)
+inh(p)
+
+end molecule types
+
+begin seed species
+
+# The two lines below replace "R(dim,Y1~0,Y2~0) Rtot" in Supplementary file S3.
+R1(dim,Y1~0) Rtot
+R2(dim,Y2~0) Rtot
+
+# The lines below are unchanged.
+A(SH2) Atot
+P(cat) Ptot
+inh(p) inhtot
+
+end seed species
+
+begin observables
+
+# The lines below are unchanged.
+Molecules pY1 R1(Y1~P)
+Molecules pY2 R2(Y2~P)
+
+end observables
+
+begin reaction rules
+
+# The two rules below replace the first rule in Supplementary file S3.
+#   R has been changed to either R1 or R2.
+R1(dim)+R1(dim)<->R1(dim!1).R1(dim!1) kf_dim,kr_dim
+R2(dim)+R2(dim)<->R2(dim!1).R2(dim!1) kf_dim,kr_dim
+
+# The two rules below replace the second and third rules in Supplementary file S3.
+#   R has been changed to either R1 or R2.
+R1(dim!+,Y1~0)->R1(dim!+,Y1~P) p1_auto
+R2(dim!+,Y2~0)->R2(dim!+,Y2~P) p2_auto
+
+# The two rules below replace the fourth and fifth rules in Supplementary file S3.
+#   R has been changed to either R1 or R2.
+R1(Y1~0)->R1(Y1~P) p1_nonsp
+R2(Y2~0)->R2(Y2~P) p2_nonsp
+
+# The two rules below replace the sixth and seventh rules in Supplementary file S3.
+#   R has been changed to either R1 or R2.
+A(SH2)+R1(Y1~P)<->A(SH2!1).R1(Y1~P!1) kf_a1,kr_a1
+A(SH2)+R2(Y2~P)<->A(SH2!1).R2(Y2~P!1) kf_a2,kr_a2
+
+# The two rules below replace the eighth and ninth rules in Supplementary file S3.
+#   R has been changed to R1.
+P(cat)+R1(Y1~P)<->P(cat!1).R1(Y1~P!1) kp1,km1
+P(cat!1).R1(Y1~P!1)->P(cat)+R1(Y1~0) kcat1
+
+# The two rules below replace the tenth and eleventh rules in Supplementary file S3.
+#   R has been changed to R2.
+P(cat)+R2(Y2~P)<->P(cat!1).R2(Y2~P!1) kp2,km2
+P(cat!1).R2(Y2~P!1)->P(cat)+R2(Y2~0) kcat2
+
+# The rule below is unchanged.
+inh(p)+P(cat)<->inh(p!1).P(cat!1) kf_inh,kr_inh
+
+end reaction rules
+
+end model
+
+begin actions
+
+# The commands below are the same as those in Supplementary file S3.
+
+generate_network({overwrite=>1})
+
+# The simulation outputs corresponding to observables are identical
+#   for the fragmented and unfragmented models.
+
+# NB: fragmentation is compatible with deterministic simulation methods only.
+#   Thus, the method flag "ode" should not be changed to "ssa."
+
+setConcentration("inh(p)",0.0)
+simulate({method=>"ode",t_start=>-100,t_end=>0,n_steps=>100})
+setConcentration("inh(p)","inhtot")
+simulate({method=>"ode",t_start=>0,t_end=>100,n_steps=>100,continue=>1})
+
+end actions
