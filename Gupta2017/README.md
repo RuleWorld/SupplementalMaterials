@@ -1,3 +1,4 @@
+# Gupta2017
 ## Reference
 S. Gupta, J. S. Hogg, R. E. C. Lee and J. R. Faeder
 (2018) “Evaluation of Parallel Tempering to Accelerate Markov Chain Monte
