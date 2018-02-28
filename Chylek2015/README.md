@@ -1,6 +1,6 @@
 # Chylek 2015
 ## Reference
-Chylek, Lily A., Leonard A. Harris, James R. Faeder, and William S. Hlavacek (2015) “Modeling for (Physical) Biologists: An Introduction to the Rule-Based Approach.” *Physical Biology* **12**, 45007. doi:10.1088/1478-3975/12/4/045007.
+Chylek, Lily A., Leonard A. Harris, James R. Faeder, and William S. Hlavacek (2015) “Modeling for (Physical) Biologists: An Introduction to the Rule-Based Approach.” *Physical Biology* **12**, 45007. [doi:10.1088/1478-3975/12/4/045007](http://iopscience.iop.org/article/10.1088/1478-3975/12/4/045007).
 
 ## Models from the Supplemental Materials
 * [PB2015-SupplementaryfileS1](PB2015-SupplementaryfileS1.bngl.txt) - IgE receptor signaling
