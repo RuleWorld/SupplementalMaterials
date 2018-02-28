@@ -1,4 +1,5 @@
-Supplemental files for S. Gupta, J. S. Hogg, R. E. C. Lee and J. R. Faeder
+## Reference
+S. Gupta, J. S. Hogg, R. E. C. Lee and J. R. Faeder
 (2018) “Evaluation of Parallel Tempering to Accelerate Markov Chain Monte
 Carlo Methods for Parameter Estimation in Systems Biology”, in Special session
 on Parallel and distributed high-performance computing solutions in Systems
