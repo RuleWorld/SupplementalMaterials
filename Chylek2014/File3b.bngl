@@ -1,0 +1,248 @@
+# Example Model 2 (with Gab2 positive feedback) from "An interaction library for the Fc(epsilon)RI signaling network."
+# L.A. Chylek, W.S. Hlavacek, D.A. Holowka, and B.A. Baird
+
+
+begin molecule types
+
+Lat(Y136~0~P,Y175~0~P)
+Grb2(SH2,cSH3) 
+Gab2(PRS,PH,Y441~0~P)
+PI3K(SH2,cat)
+Plcg1(SH2,cat,Y783~0~P) 
+PI(OH3~0~P,OH4~0~P,OH5~0~P,head~0~1) 
+Btk(PH,cat) 
+Syk(cat) 
+Fyn(cat) 
+pre 
+zero
+stim
+end molecule types
+
+begin observables
+# Lat pY175
+Molecules pY175 Lat(Y175~P!?)
+
+# Lat pY136
+Molecules pY136 Lat(Y136~P!?)
+
+# Active Plcg1
+Molecules actPlcg Plcg1(SH2!+,Y783~P)
+
+# Active Btk
+Molecules Btkrec Btk(PH!+)
+
+# Gab2 pY441
+Molecules pGab Gab2(Y441~P!?)
+
+# Lat-associated PI3K
+Molecules PI3K_Lat PI3K().Lat()
+
+# IP3
+Molecules IP3    PI(OH3~0!?,OH4~P,OH5~P,head~0!?)
+
+# PIP3 
+Molecules PIP3  PI(OH3~P!?,OH4~P,OH5~P,head~1!?)
+
+# PIP2 
+Molecules PIP2  PI(OH3~0!?,OH4~P,OH5~P,head~1!?)
+
+Molecules Syktot Syk()
+
+Molecules Fyntot Fyn()
+
+Molecules stim stim()
+end observables
+
+begin parameters
+
+NA		6.022e23		# Avogadro's number; molecules/mole.
+celldensity	1e9			# Cells/L
+Fx     		1 	 	  	# Fraction of cell volume to simuate; unitless. 
+ECFvol          1/(celldensity)		# Extracellular volume; L/cell.
+simECFvol       ECFvol*Fx		# Simulated fraction of extracellular volume; L. 
+Cellvol         1.4e-12			# Cytoplasmic volume; L. Value from Faeder et al. (2003) 
+simCellvol	Cellvol*Fx		# Simulated fraction of cell volume; L.  
+ProteinTot	3e5			# Protein copy number per cell. 
+SimProteinTot	Fx*ProteinTot		# Simulated fraction of protein copy number. 
+ActiveKinase0 0.01*SimProteinTot
+ActiveKinase1 0.5*SimProteinTot
+ActiveKinase2 0.1*SimProteinTot
+ActiveKinase3 0.05*SimProteinTot
+Sykact ActiveKinase2
+kcSyk 100
+kcFyn 100
+KD1  79e-9*NA*simCellvol
+KD2 62e-9*NA*simCellvol
+krSH2 0.12
+kfSH2_1 krSH2/KD1 
+kfSH2_2 krSH2/KD2 
+kfPH 1.4e6/(NA*simCellvol)
+krPH 1
+kfSH3 1e6/(NA*simCellvol)
+kfSH3_3D 1e6/(NA*simCellvol)
+kfSH3_2D 100*kfSH3_3D
+krSH3 1
+kcBtk 1e-3
+kfP 1e9/(NA*simCellvol)
+krP 1
+kcP 10
+kDeg 0.1
+kPten 0.1
+kX 5e-3
+ksynthS  0.5*SimProteinTot # This number will be the steady-state level of active Syk when stimulus (stim) is set to 1 
+kdegS 1
+ksynthF 0.5*SimProteinTot # This number will be the steady-state level of active Fyn when stimulus (stim) is set to 1
+kdegF 1
+stimtot 0 # stimulation level (stimtot) can take values between 0 and 1
+end parameters
+
+begin functions
+# A logistic growth function is used to model replenishment of PIP2 through, e.g., activity of PIP5 kinase. 
+Replenish() = kX*PIP2*(1-PIP2/SimProteinTot) 
+
+end functions
+
+
+begin species
+
+# All molecules except active Syk and active Fyn are assumed to be present at the same concentration 
+Lat(Y136~0,Y175~0) SimProteinTot
+Grb2(SH2,cSH3) SimProteinTot
+Gab2(PRS,PH,Y441~0) SimProteinTot
+PI3K(SH2,cat) SimProteinTot
+Plcg1(SH2,cat,Y783~0) SimProteinTot
+PI(OH3~0,OH4~P,OH5~P,head~1) SimProteinTot
+Btk(PH,cat) SimProteinTot
+pre SimProteinTot
+
+# Active Syk and active Fyn have an initial concentration of 0, which is changed after a period of equilibration.
+# See simulation commands at end of file for more information. 
+Syk(cat) 0
+Fyn(cat) 0 
+
+stim stimtot
+end species
+
+begin reaction rules
+# Syk is synthesized
+stim -> stim + Syk(cat) ksynthS
+# Syk is degraded
+Syk(cat) -> zero kdegS
+# Fyn is synthesized
+stim -> stim + Fyn(cat) ksynthF
+# Fyn is degraded
+Fyn(cat) -> zero kdegF
+
+# Syk phosphorylates LAT Y136
+Lat(Y136~0) + Syk(cat) <-> Lat(Y136~0!1).Syk(cat!1) kfSH3,krSH3
+Lat(Y136~0!1).Syk(cat!1) ->Lat(Y136~P) + Syk(cat)  kcSyk
+
+# Syk phosphorylates LAT Y175
+Lat(Y175~0) + Syk(cat) <-> Lat(Y175~0!1).Syk(cat!1) kfSH3,krSH3
+Lat(Y175~0!1).Syk(cat!1) ->Lat(Y175~P) + Syk(cat)  kcSyk
+
+# Lat pY136 binds Plcg1
+Lat(Y136~P) + Plcg1(SH2) <-> Lat(Y136~P!1).Plcg1(SH2!1) kfSH2_2,krSH2
+
+# Lat pY175 binds Grb2
+Lat(Y175~P) + Grb2(SH2) <-> Lat(Y175~P!1).Grb2(SH2!1) kfSH2_1,krSH2
+
+# Fyn phosphorylates Gab2
+#   Binding Gab2.Grb2.Lat, Gab2 PH domain free
+Lat(Y175~P!1).Grb2(SH2!1,cSH3!2).Gab2(PRS!2,PH,Y441~0) + Fyn(cat) ->Lat(Y175~P!1).Grb2(SH2!1,cSH3!2).Gab2(PRS!2,PH,Y441~0!3).Fyn(cat!3)  kfSH3
+#   Binding Gab2.Grb2.Lat, Gab2 PH domain bound
+Lat(Y175~P!1).Grb2(SH2!1,cSH3!2).Gab2(PRS!2,PH!+,Y441~0) + Fyn(cat) ->Lat(Y175~P!1).Grb2(SH2!1,cSH3!2).Gab2(PRS!2,PH!+,Y441~0!3).Fyn(cat!3)  kfSH3
+#   Binding Gab2.PIP3, Gab2 PRS free
+Gab2(PRS,PH!+,Y441~0) + Fyn(cat) -> Gab2(PRS,PH!+,Y441~0!1).Fyn(cat!1) kfSH3
+#   Binding Gab2.PIP3, Gab2 PRS bound to Grb2, but Grb2 not bound to Lat
+Grb2(SH2,cSH3!2).Gab2(PRS!2,PH!+,Y441~0) + Fyn(cat) -> Grb2(SH2,cSH3!2).Gab2(PRS!2,PH!+,Y441~0!1).Fyn(cat!1) kfSH3 
+
+#   Unbinding 
+Gab2(Y441~0!1).Fyn(cat!1) -> Gab2(Y441~0) + Fyn(cat) krSH3
+
+#   Phosphorylation 
+Gab2(Y441~0!1).Fyn(cat!1) -> Gab2(Y441~P) + Fyn(cat) kcFyn
+
+# Gab2 associates with Grb2
+#   Grb2 is cytosolic and Gab2 is membrane associated
+Grb2(SH2,cSH3)+Gab2(PRS,PH!+)->Grb2(SH2,cSH3!1).Gab2(PRS!1,PH!+) kfSH3_3D
+#   Grb2 is membrane associated and Gab2 is cytosolic
+Grb2(SH2!+,cSH3)+Gab2(PRS,PH)->Grb2(SH2!+,cSH3!1).Gab2(PRS!1,PH) kfSH3_3D
+#   Grb2 is cytosolic and Gab2 is cytosolic
+Grb2(SH2,cSH3)+Gab2(PRS,PH)->Grb2(SH2,cSH3!1).Gab2(PRS!1,PH) kfSH3_3D
+#   Grb2 is membrane associated and Gab2 is membrane associated
+Grb2(SH2!+,cSH3)+Gab2(PRS,PH!+)->Grb2(SH2!+,cSH3!1).Gab2(PRS!1,PH!+) kfSH3_2D
+
+# Gab2 dissociates from Grb2
+Grb2(cSH3!1).Gab2(PRS!1)->Grb2(cSH3)+Gab2(PRS) krSH3
+
+# Gab2 binds PI3K 
+Gab2(Y441~P) + PI3K(SH2) <-> Gab2(Y441~P!1).PI3K(SH2!1) kfSH2_1,krSH2
+
+# Gab2 binds PIP3
+Gab2(PH) + PI(OH3~P,OH4~P,OH5~P,head~1) <-> Gab2(PH!1).PI(OH3~P,OH4~P,OH5~P,head~1!1) kfPH,krPH
+
+# PI3K generates PIP3
+#   PI3K.Gab2.Grb2.Lat binds PIP3. Gab2 PH is *not* bound 
+Lat(Y175~P!1).Grb2(SH2!1,cSH3!2).Gab2(PRS!2,PH,Y441~P!3).PI3K(SH2!3,cat) + PI(OH3~0,OH4~P,OH5~P,head~1) -> Lat(Y175~P!1).Grb2(SH2!1,cSH3!2).Gab2(PRS!2,PH,Y441~P!3).PI3K(SH2!3,cat!4).PI(OH3~0!4,OH4~P,OH5~P,head~1) kfP
+#   PI3K.Gab2.Grb2.Lat binds PIP3. Gab2 PH *is* bound. 
+Lat(Y175~P!1).Grb2(SH2!1,cSH3!2).Gab2(PRS!2,PH!+,Y441~P!3).PI3K(SH2!3,cat) + PI(OH3~0,OH4~P,OH5~P,head~1) -> Lat(Y175~P!1).Grb2(SH2!1,cSH3!2).Gab2(PRS!2,PH!+,Y441~P!3).PI3K(SH2!3,cat!4).PI(OH3~0!4,OH4~P,OH5~P,head~1) kfP
+#   PI3K.Gab2.PIP3 binds PIP3. Gab2 PRS is not bound. 
+Gab2(PRS,PH!+,Y441~P!3).PI3K(SH2!3,cat) + PI(OH3~0,OH4~P,OH5~P,head~1) -> Gab2(PRS,PH!+,Y441~P!3).PI3K(SH2!3,cat!2).PI(OH3~0!2,OH4~P,OH5~P,head~1) kfP
+#   PI3K.Gab2.PIP3 binds PIP3. Gab2 PRS is bound but Grb2 is not bound to Lat. 
+Grb2(SH2,cSH3!2).Gab2(PRS!2,PH!+,Y441~P!3).PI3K(SH2!3,cat) + PI(OH3~0,OH4~P,OH5~P,head~1) -> Grb2(SH2,cSH3!2).Gab2(PRS!2,PH!+,Y441~P!3).PI3K(SH2!3,cat!4).PI(OH3~0!4,OH4~P,OH5~P,head~1) kfP
+
+#   Unbinding 
+PI3K(cat!4).PI(OH3~0!4,OH4~P,OH5~P,head~1) -> PI3K(cat) + PI(OH3~0,OH4~P,OH5~P,head~1) krP
+
+#   Phosphorylation
+PI3K(cat!4).PI(OH3~0!4,OH4~P,OH5~P,head~1) -> PI3K(cat) + PI(OH3~P,OH4~P,OH5~P,head~1) kcP
+
+# Btk binds PIP3 
+PI(OH3~P,OH4~P,OH5~P,head~1) + Btk(PH) <-> PI(OH3~P,OH4~P,OH5~P,head~1!1).Btk(PH!1) kfPH,krPH
+
+# Btk phosphorylates Plcg1
+#   Binding 
+Btk(PH!+,cat) + Plcg1(SH2!+,Y783~0) -> Btk(PH!+,cat!1).Plcg1(SH2!+,Y783~0!1) kfSH3
+#   Unbinding 
+Btk(cat!1).Plcg1(Y783~0!1) -> Btk(cat) + Plcg1(Y783~0) krSH3
+#   Phosphorylation 
+Btk(cat!1).Plcg1(Y783~0!1) -> Btk(cat) + Plcg1(Y783~P) kcSyk
+
+
+# Plcg1 generates IP3
+#   Binding 
+Plcg1(cat,SH2!+,Y783~P) + PI(OH3~0,OH4~P,OH5~P,head~1) -> Plcg1(cat!1,SH2!+,Y783~P).PI(OH3~0,OH4~P,OH5~P,head~1!1) 10*kfP
+#   Unbinding 
+Plcg1(cat!1).PI(head~1!1) -> Plcg1(cat) + PI(head~1) krP
+#   Catalysis 
+Plcg1(cat!1).PI(head~1!1) -> Plcg1(cat) + PI(head~0) kcP
+
+
+# IP3 is cleared
+PI(OH3~0,OH4~P,OH5~P,head~0) -> zero kDeg
+
+# PIP3 is dephosphorylated to PIP2
+PI(OH3~P,OH4~P,OH5~P,head~1) -> PI(OH3~0,OH4~P,OH5~P,head~1) kPten
+
+# PIP2 is replenished. "pre" represents a precursor molecule. Replenish() is a functional rate law defined in the "functions" block above. 
+pre -> pre + PI(OH3~0,OH4~P,OH5~P,head~1) max(0,Replenish())
+
+# Dephosphorylation reactions 
+Lat(Y175~P) -> Lat(Y175~0) 5
+Lat(Y136~P) -> Lat(Y136~0) 5
+Gab2(Y441~P) -> Gab2(Y441~0) 5
+Plcg1(Y783~P) -> Plcg1(Y783~0) 5 
+end reaction rules
+
+# Generate reaction network from rule set 
+generate_network({overwrite=>1});
+
+# Execution of following command performs equilibration before Syk and Fyn are added as inputs  
+simulate_ode({suffix=>0,t_end=>1000,n_steps=>1000});
+
+saveConcentrations();
+resetConcentrations();
+
+# The stimulus level is set below. Additional simulation commands can then be added.
+setConcentration("stim()","stimtot")

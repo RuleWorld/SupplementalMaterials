@@ -1,0 +1,12 @@
+-xml ChylekLA_SupplementaryFile1.xml
+
+begin
+sim 1000 1000
+
+set kfl 4.7e-3 
+
+update
+
+sim 300 300
+
+end
