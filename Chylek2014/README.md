@@ -1,5 +1,6 @@
-# Chylek 2015
+# Chylek 2014
 ## Reference
+Chylek, L. A., Holowka, D. A., Baird, B. A., & Hlavacek, W. S. (2014). AN INTERACTION LIBRARY FOR THE FcεRI SIGNALING NETWORK. *Frontiers in Immunology*, **5**, 1–42. https://doi.org/10.3389/fimmu.2014.00172
 
 ## Contents
 Supplementary Files 1-3 are BioNetGen input files with .bngl extensions. 
