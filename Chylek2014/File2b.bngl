@@ -93,7 +93,7 @@ ksynthS  0.5*SimProteinTot # This number will be the steady-state level of activ
 kdegS 1
 ksynthF 0.5*SimProteinTot # This number will be the steady-state level of active Fyn when stimulus (stim) is set to 1
 kdegF 1
-stimtot 0 # stimulation level (stimtot) can take values between 0 and 1
+stimtot 1 # stimulation level (stimtot) can take values between 0 and 1
 end parameters
 
 begin functions
@@ -120,7 +120,7 @@ pre SimProteinTot
 Syk(cat) 0
 Fyn(cat) 0 
 
-stim stimtot
+stim 0
 end species
 
 begin reaction rules
@@ -237,10 +237,11 @@ end reaction rules
 generate_network({overwrite=>1});
 
 # Execution of following command performs equilibration before Syk and Fyn are added as inputs  
-simulate_ode({suffix=>0,t_end=>1000,n_steps=>1000});
+simulate_ode({t_end=>1000,n_steps=>1000});
 
 saveConcentrations();
 resetConcentrations();
 
 # The stimulus level is set below. Additional simulation commands can then be added.
-setConcentration("stim()","stimtot")
+setConcentration("stim","stimtot")
+simulate_ode({continue=>1,t_end=>2000,n_steps=>1000});

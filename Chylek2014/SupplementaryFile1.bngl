@@ -743,4 +743,6 @@ Molecules Syk_pY519_520 Syk(Y519_Y520~P)
 
 end observables
 
-writeXML();
+# NOTE: The RuleBender parser doesn't recognize the 'get_final_state' keyword and indicates this is an error, but 
+#       this command will execute correctly in BioNetGen.
+simulate({	method=>"nf",t_end=>1000,n_steps=>1000,get_final_state=>0})

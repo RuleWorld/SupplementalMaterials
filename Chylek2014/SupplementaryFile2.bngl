@@ -204,4 +204,4 @@ setConcentration("Syk(cat)","ActiveKinase1");
 setConcentration("Fyn(cat)","ActiveKinase1");
 
 # The following command simulates system behavior after addition of Syk and Fyn inputs 
-simulate_ode({suffix=>stim1,t_end=>1000,n_steps=>1000});
+simulate_ode({suffix=>"stim1",t_end=>1000,n_steps=>1000});
