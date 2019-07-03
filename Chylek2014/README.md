@@ -1,3 +1,7 @@
+# Chylek 2015
+## Reference
+
+## Contents
 Supplementary Files 1-3 are BioNetGen input files with .bngl extensions. 
 They are plain-text files that can be processed by BioNetGen (http://bionetgen.org).
 
@@ -15,6 +19,7 @@ This file can be processed by BioNetGen to produce simulation results.
 
 A modified form of the File 2 model was used to generate Fig. 6, and a modified form of the File 3 model was used to generate Fig. 8. For both sets of simulations, an input representing a stimulus was used to control the rate of activation of Syk and Fyn. Syk and Fyn were both deactivated through first-order processes. The extra rules and parameters are below. The level of stimulus is set to a number between 0 and 1, which causes generation of active Syk and Fyn. 
 
+<pre>
 Parameters: 
 ksynthS  0.5*SimProteinTot # This number will be the steady-state level of active Syk when stimulus is set to 1 
 kdegS 1
@@ -30,3 +35,4 @@ Syk(cat) -> zero kdegS
 stimulus -> stimulus + Fyn(cat) ksynthF
 # Fyn is deactivated
 Fyn(cat) -> zero kdegF
+</pre>
