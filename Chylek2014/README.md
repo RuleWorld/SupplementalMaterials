@@ -36,3 +36,10 @@ stimulus -> stimulus + Fyn(cat) ksynthF
 # Fyn is deactivated
 Fyn(cat) -> zero kdegF
 </pre>
+
+A slightly simpler way to implement this using newer BNGL syntax is as follows:
+<pre>
+0 <-> Syk(cat) stim*SykTot*kdegS, kdegS
+0 <-> Fyn(cat) stim*FynTot*kdegF, kdegF
+</pre>
+where `SykTot` and `FynTot` are the desired steady state levels of Syk and Fyn respectively and `stim` is used to determine the fraction of these levels that are achieved.
