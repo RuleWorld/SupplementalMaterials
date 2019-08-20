@@ -1,9 +1,4 @@
-% this script will start-up a parallel tempering job for
-%  the Michaelis-Menten model 
-%
-%   to execute from command line on remote server:
-%   > nohup matlab -r run_pt > run_pt.out 2> run_pt.err < /dev/null &
-  
+ 
 % path to parallel tempering scripts
 addpath('/shared2/LabUserFiles/Sanjana_Gupta/Original/ptempest/core/');
 
