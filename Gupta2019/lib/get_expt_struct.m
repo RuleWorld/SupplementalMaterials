@@ -1,4 +1,6 @@
 function  expt = get_expt_struct(mean_data,std_data)
+    %take mean and standard deviation of data and create ptempest styled
+    %expt struct for fitting.
     expt{1}.mean = mean_data;
     expt{1}.stdev = std_data;
     expt{1}.nsamples = ones(size(expt{1}.mean));

@@ -1,8 +1,11 @@
 function [smooth_data,noisy_data,mean_data,std_data,noise,f] = gen_noisy_data(true_param,simulate_function,noise_level,repeats,plt)
+    %simulate data using true parameter values
     [~,~,smooth_data] = simulate_function(true_param);
     noisy_data = zeros(length(smooth_data),repeats);
     noise = zeros(length(smooth_data),repeats);
+    %for each repeat
     for i = 1:repeats
+        %the standard deviation of the noise is given by:
         noise(:,i) = (noise_level*smooth_data).*randn(length(smooth_data),1);
         noisy_data(:,i) = smooth_data+noise(:,i);
     end

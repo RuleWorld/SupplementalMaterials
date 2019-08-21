@@ -1,7 +1,6 @@
 example_index=2;
 addpath('../lib')
 save_pth = 'pdf_updated_figures_July23_2019';
-
 true_params = [-1,-10,-10,-10,-10,-10,0,-10,-10,-10,-10,-10,-10,-10,-10,-10,-10,-10,-10,-10];
 %%
 B = 1;
