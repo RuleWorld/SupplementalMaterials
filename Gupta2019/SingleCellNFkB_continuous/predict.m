@@ -1,4 +1,5 @@
 function [err, sp, obsv,oeq,o1] = predict(parameters)
+%Same as simulate function but returns intermediates
 %% Model protocol specific parameters
 num_par = 26;
 params = parameters(1:num_par);
@@ -9,13 +10,6 @@ dose = 0.1;
 t0 = 4;
 species_init = [];
 t = tstim;
-% %% add protein
-% if params(1)<1 || params(2)<1 || params(3) < 1 || params(1) > 7 || params(2) > 7 || params(3) > 7
-%     err = 1;
-%     sp = 1e29*ones(size(t));
-%     obsv = 1e29*ones(size(t));
-%     return
-% end
 %% add parameter constraints
 % 1) params(14) = exit rate of nuclear bound NFkB-IkB. This should be
 % greater than exit rate of free IkB (13) or free NFkB (11)
@@ -23,10 +17,6 @@ t = tstim;
 % degradation rate of bound IkB (kt2a,18)
 % 3) Basal degradation rate of free IkB (c4a, 15) should be less than IKK
 % mediated degradation rate of free IkB (kt1a,17)
-% 4) Basal degradation rate of free IkB (c4a,16) should be greater than bound
-% IkB (c5a,16) NOT IMPLEMENTED
-% 5) IKK mediated degradation rate of bound IkB (kt2a,18) is greater than
-% free (kt1a,17) NOT IMPLEMENTED
 % 
 if (params(14)+params(26))<(params(13)+params(26)) || (params(14)+params(26))<(params(11)+params(25)) || (params(16)+params(26))> (params(18)+params(25)) || (params(15)+params(26))>(params(17)+params(25))
     err = 1;
@@ -43,7 +33,7 @@ if err
 end
 %% Check equilibrium amount of NFkB. Rougly 8-15% of the total amount should be in the nucleus.
 NuclearAbundance = (oeq(end,1)+oeq(end,6))/10^params(1);
-if NuclearAbundance<0.05 || NuclearAbundance > 0.50 %||  min(oeq(end,1:6)) < 1
+if NuclearAbundance<0.05 || NuclearAbundance > 0.50 
     err = 1;
 end
 if err
@@ -62,7 +52,7 @@ end
 %% Check numbers of active ikk and tnfr
 ikk = o1(:,8);
 tnfr = o1(:,9);
-if max(ikk) < 1 || max(tnfr) < 1 %|| ikk(end) > 0.05*max(ikk)
+if max(ikk) < 1 || max(tnfr) < 1
     err = 1;
 end
 if err
