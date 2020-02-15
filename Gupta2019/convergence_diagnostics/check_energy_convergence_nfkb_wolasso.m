@@ -1,4 +1,4 @@
-%Code for Table S5 without lasso
+%Code for Table S4 without lasso
 
 %We run 6 repeats for each of two starting parameter sets.
 %If the 6 repeats have a PSRF < 1.2 for the energy chain then they are sampling the same energy basin and can be combined

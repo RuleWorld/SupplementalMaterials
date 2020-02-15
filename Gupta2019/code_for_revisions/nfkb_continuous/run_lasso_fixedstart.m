@@ -6,6 +6,8 @@ addpath('/shared2/LabUserFiles/Sanjana_Gupta/Original/ptempest/core/distr/');
 B_VALUES = [2];
 job = [1e29,1e29,1e29,1e29]; %dummy job index to initialize file
 dlmwrite('jobs_lasso1.txt',job,'-append');
+%initializing from a previous run where b was very large and therefore easy
+%to fit
 data = load('SingleCellNFkB_reduced_model_continuous_adaptiveIKK_randomstart_withlasso_mu_-25_b_10_trajectory_1_repeat_1_progress300000.mat');
 for mu = [-25]
     for b = B_VALUES

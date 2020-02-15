@@ -29,7 +29,7 @@ for trajectory_number =  1
             if c==1
                 tmp = data.cfg.initp;
             else
-                if sum(sum(tmp~=data.cfg.initp))~=0
+                if sum(sum(tmp~=data.cfg.initp))~=0 %Make sure that repeats in the same group have the same initial conditions.
                     disp('problem');
                     return
                 else 

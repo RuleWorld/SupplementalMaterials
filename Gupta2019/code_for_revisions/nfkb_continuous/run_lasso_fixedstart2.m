@@ -24,7 +24,6 @@ for mu = [-25]
                 % load configuration file
                 jobname = ['SingleCellNFkB_reduced_model_continuous_adaptiveIKK_fixedstart_withlasso_mu_',num2str(mu),'_b_',num2str(b),'_trajectory_',num2str(trajectory_number),'_repeat_',num2str(repeat)];
                 cfg = config_lasso(jobname,mu,b,trajectory_number);
-                %cfg.initp = data.params_chain(1,:,3e5);
                 if repeat<=8
                     cfg.initp = data.params_chain(1,:,9e5); %start point 1 for group 1
                 else

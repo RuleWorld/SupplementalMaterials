@@ -1,4 +1,4 @@
-%Code for synthetic examples in Table S3, S6
+%Code for synthetic examples in Table S6, S7
 %------------------------------------------
 %Some details about location of results, hyperparameters to be used, and
 %start and end points of the chains to be considered. "Experiment" refers

@@ -4,6 +4,8 @@ addpath('/shared2/LabUserFiles/Sanjana_Gupta/OriginalWithFixedStart/ptempest/cor
 addpath('/shared2/LabUserFiles/Sanjana_Gupta/Original/ptempest/core/distr/');
 num_traj = 5;
 b = 2;
+%Location of previously run repeats that will be used to initialize the
+%PT chains
 file_prefix = 'initialize_wolasso/SingleCellNFkB_wolasso_randomstart_';
 
 job = [1e29,1e29]; %dummy job index to initialize file
@@ -21,18 +23,10 @@ for trajectory_number = 1:5
         else
             continue
         end
-        if repeat<=2
-            full_prefix = [file_prefix,'trajectory_',num2str(trajectory_number),'_repeat_',num2str(repeat),'_progress'];
-        elseif repeat<=4
-            full_prefix = [file_prefix,'trajectory_',num2str(trajectory_number),'_repeat_',num2str(repeat-2),'_progress'];
-        elseif repeat<=6
-            full_prefix = [file_prefix,'trajectory_',num2str(trajectory_number),'_repeat_',num2str(repeat-4),'_progress'];
-        elseif repeat<=8
-            full_prefix = [file_prefix,'trajectory_',num2str(trajectory_number),'_repeat_',num2str(repeat-6),'_progress'];
-        elseif repeat<=10
-            full_prefix = [file_prefix,'trajectory_',num2str(trajectory_number),'_repeat_',num2str(repeat-8),'_progress'];
-        elseif repeat<=12
-            full_prefix = [file_prefix,'trajectory_',num2str(trajectory_number),'_repeat_',num2str(repeat-10),'_progress'];
+        if mod(repeat,2) == 1  
+            full_prefix = [file_prefix,'trajectory_',num2str(trajectory_number),'_repeat_',num2str(1),'_progress'];
+        else
+            full_prefix = [file_prefix,'trajectory_',num2str(trajectory_number),'_repeat_',num2str(2),'_progress'];
         end
         S = dir([full_prefix,'*.*']);
         data = load(['initialize_wolasso/',S.name]);

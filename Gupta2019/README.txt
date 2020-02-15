@@ -31,15 +31,11 @@
     run_wo_lasso.m
         function to run repeats of PT
 
-    OPTIONAL FILES:
-        
-
-Some additional optional files for easy scaling up:
-
-    call_screen_lasso.sh
-    call_screen_wolasso.sh
-    run_matlab_with_lasso.sh
-    run_matlab_wo_lasso.sh
+    OPTIONAL FILES:Some additional optional files for easy scaling up:
+            call_screen_lasso.sh
+            call_screen_wolasso.sh
+            run_matlab_with_lasso.sh
+            run_matlab_wo_lasso.sh
 
 ./Figures
     contains code to generate each of the figures in the paper.
@@ -49,8 +45,17 @@ Some additional optional files for easy scaling up:
 ./convergence_diagnostics
     code to check parameter convergence with PSRF or MPSRF, compute average step acceptance rates, 
     average swap acceptance rates and convergence of the energy chains for combining PT or PTLasso chains in the NFkB example
+    All the PSRF and MPSRF calculations are done with third-party code available here: https://research.cs.aalto.fi/pml/software/mcmcdiag/
 
 ./lib
 
 Descriptions of any additional example-specific files are provied in the relevant folders
+
+code_for_revisions contains:
+     (1) All the code for Figure S3.
+     (2) reruns of the fits for NFkB responses to continuous TNF stimulation and calculation of the corresponding convergence metrics.
+     (3) Any new figure code, or minor alterations to older figure code.
+     (if code for a figure file is located in both FigureCode and code_for_revisions/revised_figure_code, the paper figure will correspond to the one in the latter.)
+
+
     

@@ -1,4 +1,4 @@
-%Code for synthetic examples in Tables S1 and S2
+%Code for synthetic examples in Tables S2 and S3
 %-----------------------------------------------
 %Third party code used for psrf / mpsrf calculations available here: https://research.cs.aalto.fi/pml/software/mcmcdiag/
 addpath('../mcmc_diag');

@@ -1,4 +1,4 @@
-%%
+%% This is not included in the paper but here we are checking to make sure correct parameter covariations were maintained for the continuous treatment runs.
 for i = 1:16
     load(['SingleCellNFkB_reduced_model_continuous_adaptiveIKK_fixedstart_withlasso_mu_-25_b_2_trajectory_1_repeat_',num2str(i),'_progress500000.mat'])
     %%

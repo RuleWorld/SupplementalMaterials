@@ -30,7 +30,7 @@ if err
     obsv = 1e29*ones(size(t));
     return
 end
-%% Check equilibrium amount of NFkB. Rougly 8-15% of the total amount should be in the nucleus.
+%% Check equilibrium amount of NFkB. 
 NuclearAbundance = (oeq(end,1)+oeq(end,6))/10^params(1);
 if NuclearAbundance<0.05 || NuclearAbundance > 0.50 
     err = 1;

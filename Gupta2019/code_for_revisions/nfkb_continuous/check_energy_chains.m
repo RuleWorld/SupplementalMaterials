@@ -1,3 +1,4 @@
+%Check the energy chains visually to make sure they look flat
 f = figure('units','normalized','outerposition',[0,0,1,1]);
 c=1;
 for i = 1:16
@@ -9,8 +10,7 @@ for i = 1:16
     %histogram(e(:),'EdgeColor','none');
     %hold on
     plot(e);
-    hold on
-    
+    hold on   
     ylim([20 50])
 %return
 end

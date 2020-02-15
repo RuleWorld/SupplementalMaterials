@@ -8,13 +8,13 @@ E()
 end molecule types
 
 begin parameters
-k1 0
+k1 -1
 k2 -20
 k3 -20
 k4 -20
 k5 -20
 k6 -20
-k7 -1
+k7 0
 k8 -20
 k9 -20
 k10 -20
