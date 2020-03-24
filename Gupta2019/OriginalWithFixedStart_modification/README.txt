@@ -1,3 +1,5 @@
+the init_chains file from ptempest is slightly modified here to enable initialization with a fixed start point.
+
 to run ptempest from a fixed initial condition as in the case of the run files that point to OriginalWithFixedStart
 replace this initialization file.
 

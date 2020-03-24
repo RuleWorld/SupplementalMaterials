@@ -1,4 +1,4 @@
-./<example_name> contains code to run each of the examples. key files in each of the example folders are:
+./<example_name> contains code to run each of the examples using ptempest. ptempest (available here: https://github.com/RuleWorld/ptempest) is open source MATLAB software for Parallel Tempering) key files in each of the example folders are:
     Model specification files: <example_name>.bngl, <example_name>.m, <example_name>_cvode.c
         the .bngl file is the model specification in bngl. 
         writeMfile and writeMexfile commands in the bngl file are used to get the .m file and the _cvode.c file
