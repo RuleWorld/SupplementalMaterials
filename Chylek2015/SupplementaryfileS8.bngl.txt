@@ -5,7 +5,7 @@ setOption("NumberPerQuantityUnit",6.02214e23)
 begin model
 
 # A model for coupled folding and binding of a peptide to a ligand based on 
-# Kiefhabe et al. (2012) formulated using the energy-based extension of the 
+# Kiefhaber et al. (2012) formulated using the energy-based extension of the 
 # BioNetGen language (eBNGL) developed by Hogg (2013).
 #
 # Note that eBNGL is best used in combination with the compartmental extension 
